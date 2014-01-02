@@ -65,6 +65,9 @@ class HingeCuts(inkex.Effect):
         dx = float(node.get("width"))
         y = float(node.get("y"))
         dy = float(node.get("height"))
+        # get the transform from the parent rectangle if it exists. We will apply the transform
+        # to the hinge cuts so that they are aligned with the rectangle later.
+        transform = node.get("transform")
         
         # calculate the cut lines for the hinge
         lines, l_actual, d_actual, dd_actual = self.calcCutLines(x, y, dx, dy, l, d, dd)
@@ -76,6 +79,9 @@ class HingeCuts(inkex.Effect):
         # add the path to the document
         style = { 'stroke': '#000000', 'fill': 'none', 'stroke-width': inkex.unittouu("0.1 mm")}
         drw = {'style':simplestyle.formatStyle(style), 'd': s}
+        # include the transform from the parent rectangle.
+        if transform:
+          drw['transform'] = transform
         hinge = inkex.etree.SubElement(parent, inkex.addNS('path', 'svg'), drw)
         # add a description element to hold the parameters used to create the cut lines
         desc = inkex.etree.SubElement(hinge, inkex.addNS('desc', 'svg'))
