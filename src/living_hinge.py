@@ -19,14 +19,23 @@ For a copy of the GNU General Public License
 write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
-__version__ = "0.1" 
+
+""" 
+Change in version 0.2.
+Changed self.unittouu to self.unittouu
+and self.uutounit to self.uutounit
+to make it work with Inkscape 0.91
+Thanks to Pete Prodoehl for pointing this out.
+"""
+
+__version__ = "0.2" 
 
 import sys,inkex,simplestyle,gettext
 _ = gettext.gettext
 
 def drawS(parent, XYstring):         # Draw lines from a list
   name='part'
-  style = { 'stroke': '#000000', 'fill': 'none', 'stroke-width': inkex.unittouu("0.1 mm") }
+  style = { 'stroke': '#000000', 'fill': 'none', 'stroke-width': self.unittouu("0.1 mm") }
   drw = {'style':simplestyle.formatStyle(style),inkex.addNS('label','inkscape'):name,'d':XYstring}
   inkex.etree.SubElement(parent, inkex.addNS('path','svg'), drw )
   return
@@ -46,12 +55,12 @@ class HingeCuts(inkex.Effect):
     
     unit=self.options.unit
     # starting cut length. Will be adjusted for get an integer number of cuts in the y-direction.
-    l = inkex.unittouu(str(self.options.cut_length) + unit)
+    l = self.unittouu(str(self.options.cut_length) + unit)
     # cut separation in the y-direction
-    d = inkex.unittouu(str(self.options.gap_length) + unit)
+    d = self.unittouu(str(self.options.gap_length) + unit)
     # starting separation between lines of cuts in the x-direction. Will be adjusted to get an integer
     # number of cut lines in the x-direction.
-    dd = inkex.unittouu(str(self.options.sep_distance) + unit)
+    dd = self.unittouu(str(self.options.sep_distance) + unit)
     
     # get selected nodes
     if self.selected:
@@ -65,9 +74,6 @@ class HingeCuts(inkex.Effect):
         dx = float(node.get("width"))
         y = float(node.get("y"))
         dy = float(node.get("height"))
-        # get the transform from the parent rectangle if it exists. We will apply the transform
-        # to the hinge cuts so that they are aligned with the rectangle later.
-        transform = node.get("transform")
         
         # calculate the cut lines for the hinge
         lines, l_actual, d_actual, dd_actual = self.calcCutLines(x, y, dx, dy, l, d, dd)
@@ -77,20 +83,17 @@ class HingeCuts(inkex.Effect):
         for line in lines:
           s = s + "M %s, %s L %s, %s " % (line['x1'], line['y1'], line['x2'], line['y2'])
         # add the path to the document
-        style = { 'stroke': '#000000', 'fill': 'none', 'stroke-width': inkex.unittouu("0.1 mm")}
+        style = { 'stroke': '#000000', 'fill': 'none', 'stroke-width': self.unittouu("0.1 mm")}
         drw = {'style':simplestyle.formatStyle(style), 'd': s}
-        # include the transform from the parent rectangle.
-        if transform:
-          drw['transform'] = transform
         hinge = inkex.etree.SubElement(parent, inkex.addNS('path', 'svg'), drw)
         # add a description element to hold the parameters used to create the cut lines
         desc = inkex.etree.SubElement(hinge, inkex.addNS('desc', 'svg'))
         desc.text = "Hinge cut parameters: actual(requested)\n" \
           "cut length: %.2f %s (%.2f %s)\n" \
           "gap length: %.2f %s (%.2f %s)\n" \
-          "separation distance: %.2f %s (%.2f %s)" % (inkex.uutounit(l_actual, unit), unit, inkex.uutounit(l, unit), unit, 
-                                 inkex.uutounit(d_actual, unit), unit, inkex.uutounit(d, unit), unit,
-                                 inkex.uutounit(dd_actual, unit), unit, inkex.uutounit(dd, unit), unit)
+          "separation distance: %.2f %s (%.2f %s)" % (self.uutounit(l_actual, unit), unit, self.uutounit(l, unit), unit, 
+                                 self.uutounit(d_actual, unit), unit, self.uutounit(d, unit), unit,
+                                 self.uutounit(dd_actual, unit), unit, self.uutounit(dd, unit), unit)
     else:
       inkex.debug("No rectangle(s) have been selected.")
       
